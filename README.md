@@ -13,3 +13,8 @@ go run cmd/server/server.go
 go run cmd/client/client.go
 ✅ Ответ сервера: {"status": "secure", "message": "Данные переданы через TLS"}
 ```
+
+```bash
+ go run cmd/mtls/server/server.go
+🔒 Сервер в режиме mTLS запущен на https://localhost:8443
+```
