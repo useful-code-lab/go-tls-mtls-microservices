@@ -40,6 +40,15 @@ curl -k https://localhost:8443/api/data# curl: (35) error... alert bad certifica
 
 go run cmd/mtls/client/client.go# ✅ Успех mTLS! Ответ сервера: {"status": "mTLS Success", "client": "GuardGo-Client"}
 
+### Проверка mTLS через cURL
+Чтобы пройти проверку на сервере, необходимо предъявить сертификат и ключ клиента. Флаг `-k` позволяет игнорировать самоподписанный сертификат сервера, но `--cert` и `--key` обязательны для авторизации клиента.
+
+```bash
+curl -k \
+  --cert certs/client.crt \
+  --key certs/client.key \
+  https://localhost:8443/api/data
+
 ------------------------------
 ## 📁 Структура проекта
 
