@@ -1,32 +1,51 @@
-Генерация сертификатов
-```bash
+## Guard-Go 🛡️
+Проект разработки безопасных микросервисных приложений на языке Go.
+## 🔑 1. Подготовка сертификатов
+Перед запуском необходимо сгенерировать локальный Центр Сертификации (CA) и ключи для сервисов. Скрипт создаст всё необходимое в папке certs/.
+
 bash certs/gen.sh
-```
 
-Запрос без проверки кто подписал сертификат сервера
-```bash
- curl -k https://localhost:8443/api/data
-{"status": "secure", "message": "Данные переданы через TLS"}
-```
-# TLS
-```bash
-go run cmd/server/server.go
-🚀 Сервер запущен на https://localhost:8443
-```
+------------------------------
+## 🛡️ Уровень 1: Базовый TLS
+Шифрование канала связи. Сервер предъявляет сертификат, но не проверяет клиента.
+## Запуск сервера
 
-```bash
-go run cmd/client/client.go
-✅ Ответ сервера: {"status": "secure", "message": "Данные переданы через TLS"}
-```
+go run cmd/server/server.go# 🚀 Сервер запущен на https://localhost:8443
 
-# MTLS
-```bash
- go run cmd/mtls/server/server.go
-🔒 Сервер в режиме mTLS запущен на https://localhost:8443
-```
+## Проверка через cURL (игнорируя проверку сертификата)
+Аналог «быстрой проверки» связи без настройки доверия.
+
+curl -k https://localhost:8443/api/data# {"status": "secure", "message": "Данные переданы через TLS"}
+
+## Проверка через Go-клиент (Insecure)
+Клиент, который ведет себя как curl -k (использует InsecureSkipVerify: true).
+
+go run cmd/client/client.go# ✅ Ответ сервера: {"status": "secure", "message": "Данные переданы через TLS"}
+
+------------------------------
+## 🔒 Уровень 2: mTLS (Mutual TLS)
+Максимальная защита. Взаимная проверка: клиент проверяет сервер, а сервер требует сертификат от клиента.
+## Запуск mTLS сервера
+Сервер настроен в режиме RequireAndVerifyClientCert.
+
+go run cmd/mtls/server/server.go# 🔒 Сервер в режиме mTLS запущен на https://localhost:8443
+
+## Попытка анонимного доступа (Ошибка)
+Обычный запрос (даже с -k) теперь будет отклонен сервером.
+
+curl -k https://localhost:8443/api/data# curl: (35) error... alert bad certificate
+
+## Запуск mTLS клиента
+Клиент предъявляет свой сертификат client.crt и проверяет сервер через ca.crt.
+
+go run cmd/mtls/client/client.go# ✅ Успех mTLS! Ответ сервера: {"status": "mTLS Success", "client": "GuardGo-Client"}
+
+------------------------------
+## 📁 Структура проекта
+
+* certs/ — Скрипты генерации и файлы ключей (.key добавлены в .gitignore).
+* cmd/server/ — Простой TLS сервер.
+* cmd/client/ — Клиент с пропуском проверки (аналог -k).
+* cmd/mtls/ — Полноценная реализация взаимной проверки.
 
 
-```bash
-aleksey@aleksey:~/guard-go$ go run cmd/mtls/client/client.go
-✅ Успех mTLS! Ответ сервера: {"status": "mTLS Success", "client": "GuardGo-Client"}
-```
